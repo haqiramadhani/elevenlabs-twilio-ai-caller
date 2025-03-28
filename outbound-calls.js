@@ -115,6 +115,10 @@ export function registerOutboundRoutes(fastify) {
             // Send initial configuration with prompt and first message
             const initialConfig = {
               type: "conversation_initiation_client_data",
+              dynamic_variables: {
+                call_sid: callSid,
+                called_number: TWILIO_PHONE_NUMBER,
+              },
               conversation_config_override: {
                 agent: {
                   prompt: { prompt: customParameters?.prompt || "you are a gary from the phone store" },
