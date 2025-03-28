@@ -36,6 +36,8 @@ export function registerInboundRoutes(fastify) {
 
   // Route to handle incoming calls from Twilio
   fastify.all("/incoming-call-eleven", async (request, reply) => {
+    console.log(`[Server] Twilio request body ${JSON.stringify(request.body)}`);
+    
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
         <Connect>
