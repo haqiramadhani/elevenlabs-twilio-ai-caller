@@ -46,7 +46,7 @@ export function registerOutboundRoutes(fastify) {
 
   // Route to initiate outbound calls
   fastify.post("/outbound-call", async (request, reply) => {
-    const { number, prompt } = request.body;
+    const { number, prompt, callback } = request.body;
 
     if (!number) {
       return reply.code(400).send({ error: "Phone number is required" });
@@ -56,7 +56,7 @@ export function registerOutboundRoutes(fastify) {
       const call = await twilioClient.calls.create({
         from: TWILIO_PHONE_NUMBER,
         to: number,
-        url: `https://${request.headers.host}/outbound-call-twiml?prompt=${encodeURIComponent(prompt)}`
+        url: `https://${request.headers.host}/outbound-call-twiml?prompt=${encodeURIComponent(prompt)}&callback=${encodeURIComponent(callback)}`,
       });
 
       reply.send({ 
@@ -76,12 +76,14 @@ export function registerOutboundRoutes(fastify) {
   // TwiML route for outbound calls
   fastify.all("/outbound-call-twiml", async (request, reply) => {
     const prompt = request.query.prompt || '';
+    const callback = request.query.callback || '';
 
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
         <Connect>
           <Stream url="wss://${request.headers.host}/outbound-media-stream">
             <Parameter name="prompt" value="${prompt}" />
+            <Parameter name="callback" value="${callback}" />
           </Stream>
         </Connect>
       </Response>`;
@@ -120,12 +122,11 @@ export function registerOutboundRoutes(fastify) {
                 called_number: TWILIO_PHONE_NUMBER,
               },
               conversation_config_override: {
-                agent: {
-                  prompt: { prompt: customParameters?.prompt || "you are a gary from the phone store" },
-                  first_message: "hey there! how can I help you today?",
-                },
+                agent: {},
               }
             };
+
+            if (customParameters?.prompt) initialConfig.conversation_config_override.agent.prompt = customParameters?.prompt;
 
             console.log("[ElevenLabs] Sending initial config with prompt:", initialConfig.conversation_config_override.agent.prompt.prompt);
 
@@ -255,6 +256,7 @@ export function registerOutboundRoutes(fastify) {
         if (elevenLabsWs?.readyState === WebSocket.OPEN) {
           elevenLabsWs.close();
         }
+        if (customParameters?.callback) fetch(customParameters.callback);
       });
     });
   });
