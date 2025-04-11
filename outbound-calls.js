@@ -128,9 +128,9 @@ export function registerOutboundRoutes(fastify) {
               }
             };
 
-            if (customParameters?.prompt) initialConfig.conversation_config_override.agent.prompt = customParameters?.prompt;
+            if (customParameters?.prompt && customParameters?.prompt != 'undefined') initialConfig.conversation_config_override.agent.prompt = {prompt: customParameters?.prompt};
 
-            console.log("[ElevenLabs] Sending initial config with prompt:", initialConfig.conversation_config_override.agent.prompt.prompt);
+            console.log("[ElevenLabs] Sending initial config with prompt:", initialConfig.conversation_config_override.agent.prompt?.prompt);
 
             // Send the configuration to ElevenLabs
             elevenLabsWs.send(JSON.stringify(initialConfig));
