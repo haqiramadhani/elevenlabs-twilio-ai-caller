@@ -56,7 +56,9 @@ export function registerOutboundRoutes(fastify) {
       const call = await twilioClient.calls.create({
         from: TWILIO_PHONE_NUMBER,
         to: number,
-        url: `https://${request.headers.host}/outbound-call-twiml?prompt=${encodeURIComponent(prompt)}&callback=${encodeURIComponent(callback)}`,
+        url: `https://${request.headers.host}/outbound-call-twiml?prompt=${encodeURIComponent(prompt)}`,
+        statusCallback: callback,
+        statusCallbackMethod: "POST",    
       });
 
       reply.send({ 
